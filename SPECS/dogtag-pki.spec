@@ -8,19 +8,19 @@ Name:             dogtag-pki
 
 # Upstream version number:
 %global           major_version 11
-%global           minor_version 6
+%global           minor_version 7
 %global           update_version 0
 
 # Downstream release number:
 # - development/stabilization (unsupported): 0.<n> where n >= 1
 # - GA/update (supported): <n> where n >= 1
-%global           release_number 1
+%global           release_number 2
 
 # Development phase:
 # - development (unsupported): alpha<n> where n >= 1
 # - stabilization (unsupported): beta<n> where n >= 1
 # - GA/update (supported): <none>
-#global           phase
+%undefine         phase
 
 %undefine         timestamp
 %undefine         commit_id
@@ -79,9 +79,28 @@ ExcludeArch: i686
 # Java
 ################################################################################
 
-# Use Java 21 on Fedora 40+ and RHEL 10, otherwise use Java 17.
-%global java_devel java-devel >= 1:17
-%global java_headless java-headless >= 1:17
+# use Java 17 on Fedora 39 or older and RHEL 9 or older
+# otherwise, use Java 21
+
+# maven-local is a subpackage of javapackages-tools
+
+%if 0%{?fedora} && 0%{?fedora} <= 39 || 0%{?rhel} && 0%{?rhel} <= 9
+
+%define java_runtime java-17-openjdk
+%define java_devel java-17-openjdk-devel
+%define java_headless java-17-openjdk-headless
+%define java_home %{_jvmdir}/jre-17-openjdk
+%define maven_local maven-local-openjdk17
+
+%else
+
+%define java_runtime java-21-openjdk
+%define java_devel java-21-openjdk-devel
+%define java_headless java-21-openjdk-headless
+%define java_home %{_jvmdir}/jre-21-openjdk
+%define maven_local maven-local
+
+%endif
 
 ################################################################################
 # Application Server
@@ -145,6 +164,9 @@ ExcludeArch: i686
 %define pki_uid 17
 %define pki_groupname pkiuser
 %define pki_gid 17
+
+# Create a home directory for PKI user at /home/pkiuser
+# to store rootless Podman container.
 %define pki_homedir /home/%{pki_username}
 
 %global saveFileContext() \
@@ -170,12 +192,12 @@ fi;
 ################################################################################
 
 BuildRequires:    make
-BuildRequires:    cmake >= 3.0.2
+BuildRequires:    cmake
 BuildRequires:    gcc-c++
 BuildRequires:    zip
 
 BuildRequires:    nspr-devel
-BuildRequires:    nss-devel >= 3.36.1
+BuildRequires:    nss-devel >= 3.101
 
 BuildRequires:    openldap-devel
 BuildRequires:    pkgconfig
@@ -183,12 +205,11 @@ BuildRequires:    policycoreutils
 
 # Java build dependencies
 BuildRequires:    %{java_devel}
-BuildRequires:    maven-local
+BuildRequires:    %{maven_local}
 %if 0%{?fedora}
 BuildRequires:    xmvn-tools
 %endif
 BuildRequires:    javapackages-tools
-BuildRequires:    javapackages-local
 
 %if %{without runtime_deps}
 BuildRequires:    xmlstarlet
@@ -232,10 +253,13 @@ BuildRequires:    mvn(org.apache.tomcat:tomcat-catalina) >= 9.0.62
 BuildRequires:    mvn(org.apache.tomcat:tomcat-servlet-api) >= 9.0.62
 BuildRequires:    mvn(org.apache.tomcat:tomcat-jaspic-api) >= 9.0.62
 BuildRequires:    mvn(org.apache.tomcat:tomcat-util-scan) >= 9.0.62
-BuildRequires:    tomcat9-lib
 
-BuildRequires:    mvn(org.dogtagpki.jss:jss-base) >= 5.6.0
-BuildRequires:    mvn(org.dogtagpki.jss:jss-tomcat) >= 5.6.0
+%if 0%{?rhel} && 0%{?rhel} >= 10
+BuildRequires:    tomcat9-lib
+%endif
+
+BuildRequires:    mvn(org.dogtagpki.jss:jss-base) >= 5.7
+BuildRequires:    mvn(org.dogtagpki.jss:jss-tomcat) >= 5.7
 BuildRequires:    mvn(org.dogtagpki.ldap-sdk:ldapjdk) >= 5.6.0
 
 # Python build dependencies
@@ -259,8 +283,6 @@ BuildRequires:    apr-util-devel
 BuildRequires:    cyrus-sasl-devel
 BuildRequires:    httpd-devel >= 2.4.2
 BuildRequires:    systemd
-BuildRequires:    zlib
-BuildRequires:    zlib-devel
 
 # build dependency to build man pages
 BuildRequires:    golang-github-cpuguy83-md2man
@@ -308,7 +330,6 @@ Obsoletes:        pki-symkey < %{version}
 Obsoletes:        %{product_id}-symkey < %{version}
 Obsoletes:        pki-console < %{version}
 Obsoletes:        pki-console-theme < %{version}
-Obsoletes:        idm-console-framework < 2.0
 
 %if %{with base}
 Requires:         %{product_id}-base = %{version}-%{release}
@@ -479,7 +500,7 @@ BuildArch:        noarch
 Obsoletes:        pki-base < %{version}-%{release}
 Provides:         pki-base = %{version}-%{release}
 
-Requires:         nss >= 3.36.1
+Requires:         nss >= 3.101
 
 Requires:         python3-pki = %{version}-%{release}
 Requires(post):   python3-pki = %{version}-%{release}
@@ -578,7 +599,7 @@ Provides:         bundled(resteasy-client) = 3.0.26
 Provides:         bundled(resteasy-jackson2-provider) = 3.0.26
 %endif
 
-Requires:         mvn(org.dogtagpki.jss:jss-base) >= 5.6.0
+Requires:         mvn(org.dogtagpki.jss:jss-base) >= 5.7
 Requires:         mvn(org.dogtagpki.ldap-sdk:ldapjdk) >= 5.6.0
 Requires:         %{product_id}-base = %{version}-%{release}
 
@@ -595,7 +616,7 @@ Obsoletes:        pki-tools < %{version}-%{release}
 Provides:         pki-tools = %{version}-%{release}
 
 Requires:         openldap-clients
-Requires:         nss-tools >= 3.36.1
+Requires:         nss-tools >= 3.101
 Requires:         %{product_id}-java = %{version}-%{release}
 Requires:         p11-kit-trust
 Requires:         file
@@ -651,8 +672,12 @@ Requires:         mvn(org.jboss.resteasy:resteasy-servlet-initializer)
 Provides:         bundled(resteasy-servlet-initializer) = 3.0.26
 %endif
 
+%if 0%{?rhel} && 0%{?rhel} >= 10
 Requires:         tomcat9 >= 1:9.0.62
-Requires:         mvn(org.dogtagpki.jss:jss-tomcat) >= 5.6.0
+%else
+Requires:         tomcat >= 1:9.0.62
+%endif
+Requires:         mvn(org.dogtagpki.jss:jss-tomcat) >= 5.7
 
 Requires:         systemd
 Requires(post):   systemd-units
@@ -673,12 +698,12 @@ Conflicts:        ipa-server < 4.7.1
 Conflicts:        freeipa-server < 4.7.1
 %endif
 
-Provides:         bundled(js-backbone) = 1.4.0
+Provides:         bundled(js-backbone) = 1.6.0
 Provides:         bundled(js-bootstrap) = 3.4.1
-Provides:         bundled(js-jquery) = 3.5.1
+Provides:         bundled(js-jquery) = 3.7.1
 Provides:         bundled(js-jquery-i18n-properties) = 1.2.7
 Provides:         bundled(js-patternfly) = 3.59.2
-Provides:         bundled(js-underscore) = 1.9.2
+Provides:         bundled(js-underscore) = 1.13.7
 
 %description -n   %{product_id}-server
 This package provides libraries and utilities needed by %{product_name} services.
@@ -878,7 +903,7 @@ Requires(postun): systemd-units
 # additional runtime requirements needed to run native 'tpsclient'
 # REMINDER:  Revisit these once 'tpsclient' is rewritten as a Java app
 
-Requires:         nss-tools >= 3.36.1
+Requires:         nss-tools >= 3.101
 Requires:         openldap-clients
 
 %description -n   %{product_id}-tps
@@ -933,6 +958,7 @@ BuildArch:        noarch
 Obsoletes:        pki-console < %{version}-%{release}
 Provides:         pki-console = %{version}-%{release}
 
+Requires:         %{java_runtime}
 Requires:         %{product_id}-java = %{version}-%{release}
 Requires:         %{product_id}-console-theme = %{version}-%{release}
 
@@ -1736,6 +1762,7 @@ fi
 %{_bindir}/TokenInfo
 %{_datadir}/pki/tools/
 %{_datadir}/pki/lib/p11-kit-trust.so
+%{_libdir}/libpki-tps.so
 %{_mandir}/man1/AtoB.1.gz
 %{_mandir}/man1/AuditVerify.1.gz
 %{_mandir}/man1/BtoA.1.gz
@@ -1766,10 +1793,8 @@ fi
 %{_mandir}/man1/PKCS10Client.1.gz
 %{_mandir}/man1/PKICertImport.1.gz
 %{_mandir}/man1/tpsclient.1.gz
-
-%if %{without maven}
-%{_datadir}/java/pki/pki-tools.jar
-%endif
+%{_javadir}/pki/pki-tools.jar
+%{_jnidir}/pki/pki-tools.jar
 
 # with base
 %endif
@@ -2019,6 +2044,10 @@ fi
 
 ################################################################################
 %changelog
+* Wed Aug 6 2025 Red Hat PKI Team <rhcs-maint@redhat.com> - 11.7.0-2
+- Rebase to PKI 11.7.0
+- Resolves: RHEL-99832
+
 * Sun Feb 16 2025 Red Hat PKI Team <rhcs-maint@redhat.com> - 11.6.0-1
 - Rebase to PKI 11.6.0
 - Resolves: RHEL-70108
