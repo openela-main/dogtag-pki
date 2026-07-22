@@ -14,7 +14,7 @@ Name:             dogtag-pki
 # Downstream release number:
 # - development/stabilization (unsupported): 0.<n> where n >= 1
 # - GA/update (supported): <n> where n >= 1
-%global           release_number 3
+%global           release_number 4
 
 # Development phase:
 # - development (unsupported): alpha<n> where n >= 1
@@ -42,13 +42,13 @@ Source: https://github.com/dogtagpki/pki/archive/v%{version}%{?phase:-}%{?phase}
 
 Source1: jakarta.activation-api-2.1.2.jar
 Source2: jakarta.annotation-api-1.3.5.jar
-Source3: jakarta.xml.bind-api-4.0.1.jar
-Source4: jackson-annotations-2.16.1.jar
-Source5: jackson-core-2.16.1.jar
-Source6: jackson-databind-2.16.1.jar
-Source7: jackson-module-jaxb-annotations-2.16.1.jar
-Source8: jackson-jaxrs-base-2.16.1.jar
-Source9: jackson-jaxrs-json-provider-2.16.1.jar
+Source3: jakarta.xml.bind-api-2.3.3.jar
+Source4: jackson-annotations-2.21.jar
+Source5: jackson-core-2.21.4.jar
+Source6: jackson-databind-2.21.4.jar
+Source7: jackson-module-jaxb-annotations-2.21.4.jar
+Source8: jackson-jaxrs-base-2.21.4.jar
+Source9: jackson-jaxrs-json-provider-2.21.4.jar
 Source10: jboss-jaxrs-2.0-api-1.0.0.Final.jar
 Source11: jboss-logging-3.5.3.Final.jar
 Source12: resteasy-jaxrs-3.0.26.Final.jar
@@ -63,6 +63,8 @@ Source15: resteasy-servlet-initializer-3.0.26.Final.jar
 #     > pki-VERSION-RELEASE.patch
 # Patch: pki-VERSION-RELEASE.patch
 #Patch1: FixBuild.patch
+
+Patch: 0001-Fix-bundled-jackson-version-mismatch.patch
 
 %if 0%{?java_arches:1}
 ExclusiveArch: %{java_arches}
@@ -601,13 +603,13 @@ Requires:         mvn(org.jboss.resteasy:resteasy-jackson2-provider)
 %else
 Provides:         bundled(jakarta-activation) = 2.1.2
 Provides:         bundled(jakarta-annotations) = 1.3.5
-Provides:         bundled(jaxb-api) = 4.0.1
+Provides:         bundled(jaxb-api) = 2.3.3
 
-Provides:         bundled(jackson-annotations) = 2.16.1
-Provides:         bundled(jackson-core) = 2.16.1
-Provides:         bundled(jackson-databind) = 2.16.1
-Provides:         bundled(jackson-modules-base) = 2.16.1
-Provides:         bundled(jackson-jaxrs-providers) = 2.16.1
+Provides:         bundled(jackson-annotations) = 2.21
+Provides:         bundled(jackson-core) = 2.21.4
+Provides:         bundled(jackson-databind) = 2.21.4
+Provides:         bundled(jackson-modules-base) = 2.21.4
+Provides:         bundled(jackson-jaxrs-providers) = 2.21.4
 
 Provides:         bundled(jboss-jaxrs-2.0-api) = 1.0.0
 Provides:         bundled(jboss-logging) = 3.5.3
@@ -1148,21 +1150,23 @@ then
             jakarta.xml.bind-api-$JAXB_API_VERSION.jar
     fi
 
-    JACKSON_VERSION=$(rpm -q jackson-annotations | sed -n 's/^jackson-annotations-\([^-]*\)-.*$/\1/p')
-    echo "JACKSON_VERSION: $JACKSON_VERSION"
+    JACKSON_ANNOTATIONS_VERSION=$(rpm -q jackson-annotations | sed -n 's/^jackson-annotations-\([^-]*\)-.*$/\1/p')
+    echo "JACKSON_ANNOTATIONS_VERSION: $JACKSON_ANNOTATIONS_VERSION"
+    JACKSON_CORE_VERSION=$(rpm -q jackson-core | sed -n 's/^jackson-core-\([^-]*\)-.*$/\1/p')
+    echo "JACKSON_CORE_VERSION: $JACKSON_CORE_VERSION"
 
     cp /usr/share/java/jackson-annotations.jar \
-        jackson-annotations-$JACKSON_VERSION.jar
+        jackson-annotations-$JACKSON_ANNOTATIONS_VERSION.jar
     cp /usr/share/java/jackson-core.jar \
-        jackson-core-$JACKSON_VERSION.jar
+        jackson-core-$JACKSON_CORE_VERSION.jar
     cp /usr/share/java/jackson-databind.jar \
-        jackson-databind-$JACKSON_VERSION.jar
+        jackson-databind-$JACKSON_CORE_VERSION.jar
     cp /usr/share/java/jackson-jaxrs-providers/jackson-jaxrs-base.jar \
-        jackson-jaxrs-base-$JACKSON_VERSION.jar
+        jackson-jaxrs-base-$JACKSON_CORE_VERSION.jar
     cp /usr/share/java/jackson-jaxrs-providers/jackson-jaxrs-json-provider.jar \
-        jackson-jaxrs-json-provider-$JACKSON_VERSION.jar
+        jackson-jaxrs-json-provider-$JACKSON_CORE_VERSION.jar
     cp /usr/share/java/jackson-modules/jackson-module-jaxb-annotations.jar \
-        jackson-module-jaxb-annotations-$JACKSON_VERSION.jar
+        jackson-module-jaxb-annotations-$JACKSON_CORE_VERSION.jar
 
     JAXRS_VERSION=$(rpm -q jboss-jaxrs-2.0-api | sed -n 's/^jboss-jaxrs-2.0-api-\([^-]*\)-.*$/\1.Final/p')
     echo "JAXRS_VERSION: $JAXRS_VERSION"
@@ -1195,14 +1199,14 @@ then
 
     /usr/bin/javax2jakarta  -profile=EE  jboss-jaxrs-api_2.0_spec-$JAXRS_VERSION.jar  jboss-jaxrs-api_2.0_spec-$JAXRS_VERSION.jar 
 
-    /usr/bin/javax2jakarta  -profile=EE  jackson-jaxrs-json-provider-$JACKSON_VERSION.jar jackson-jaxrs-json-provider-$JACKSON_VERSION.jar
+    /usr/bin/javax2jakarta  -profile=EE  jackson-jaxrs-json-provider-$JACKSON_CORE_VERSION.jar jackson-jaxrs-json-provider-$JACKSON_CORE_VERSION.jar
 
-    /usr/bin/javax2jakarta  -profile=EE  jackson-annotations-$JACKSON_VERSION.jar jackson-annotations-$JACKSON_VERSION.jar
-    /usr/bin/javax2jakarta  -profile=EE  jackson-core-$JACKSON_VERSION.jar  jackson-core-$JACKSON_VERSION.jar
-    /usr/bin/javax2jakarta  -profile=EE  jackson-databind-$JACKSON_VERSION.jar jackson-databind-$JACKSON_VERSION.jar
-    /usr/bin/javax2jakarta  -profile=EE  jackson-jaxrs-base-$JACKSON_VERSION.jar  jackson-jaxrs-base-$JACKSON_VERSION.jar
-    /usr/bin/javax2jakarta  -profile=EE  jackson-jaxrs-json-provider-$JACKSON_VERSION.jar jackson-jaxrs-json-provider-$JACKSON_VERSION.jar 
-    /usr/bin/javax2jakarta  -profile=EE  jackson-module-jaxb-annotations-$JACKSON_VERSION.jar jackson-module-jaxb-annotations-$JACKSON_VERSION.jar
+    /usr/bin/javax2jakarta  -profile=EE  jackson-annotations-$JACKSON_ANNOTATIONS_VERSION.jar jackson-annotations-$JACKSON_ANNOTATIONS_VERSION.jar
+    /usr/bin/javax2jakarta  -profile=EE  jackson-core-$JACKSON_CORE_VERSION.jar  jackson-core-$JACKSON_CORE_VERSION.jar
+    /usr/bin/javax2jakarta  -profile=EE  jackson-databind-$JACKSON_CORE_VERSION.jar jackson-databind-$JACKSON_CORE_VERSION.jar
+    /usr/bin/javax2jakarta  -profile=EE  jackson-jaxrs-base-$JACKSON_CORE_VERSION.jar  jackson-jaxrs-base-$JACKSON_CORE_VERSION.jar
+    /usr/bin/javax2jakarta  -profile=EE  jackson-jaxrs-json-provider-$JACKSON_CORE_VERSION.jar jackson-jaxrs-json-provider-$JACKSON_CORE_VERSION.jar 
+    /usr/bin/javax2jakarta  -profile=EE  jackson-module-jaxb-annotations-$JACKSON_CORE_VERSION.jar jackson-module-jaxb-annotations-$JACKSON_CORE_VERSION.jar
 
     /usr/bin/javax2jakarta  -profile=EE   jakarta.activation-api-$JAKARTA_ACTIVATION_API_VERSION.jar  jakarta.activation-api-$JAKARTA_ACTIVATION_API_VERSION.jar
     /usr/bin/javax2jakarta  -profile=EE   jakarta.annotation-api-$JAKARTA_ANNOTATION_API_VERSION.jar jakarta.annotation-api-$JAKARTA_ANNOTATION_API_VERSION.jar  
@@ -2172,6 +2176,11 @@ fi
 
 ################################################################################
 %changelog
+* Thu Jul 16 2026 Red Hat PKI Team <rhcs-maint@redhat.com> - 11.9.0-4
+- Update jackson bundled to 2.21.4 
+- Resolves: RHEL-188290
+- Resolves: RHEL-190906
+
 * Fri Mar 13 2026 Red Hat PKI Team <rhcs-maint@redhat.com> - 11.9.0-3
 - Revert to tomcat 9
 - Resolves: RHEL-155406
