@@ -14,7 +14,7 @@ Name:             dogtag-pki
 # Downstream release number:
 # - development/stabilization (unsupported): 0.<n> where n >= 1
 # - GA/update (supported): <n> where n >= 1
-%global           release_number 4
+%global           release_number 5
 
 # Development phase:
 # - development (unsupported): alpha<n> where n >= 1
@@ -65,6 +65,8 @@ Source15: resteasy-servlet-initializer-3.0.26.Final.jar
 #Patch1: FixBuild.patch
 
 Patch: 0001-Fix-bundled-jackson-version-mismatch.patch
+Patch: pki-ftweedal-0000-Add-ExternalProcessConstraint-executable-allow-list.patch
+Patch: 0001-Fix-CVE-2026-80110.patch
 
 %if 0%{?java_arches:1}
 ExclusiveArch: %{java_arches}
@@ -2176,6 +2178,10 @@ fi
 
 ################################################################################
 %changelog
+* Sat Sep 19 2026 Fraser Tweedale <ftweedal@redhat.com> - 11.9.0-5
+- RHEL-245469 CVE-2026-76561 dogtag-pki: ExternalProcessConstraint executable allow-list
+- RHEL-248585 CVE-2026-80110 dogtag-pki: ACLFilter sort order fix
+
 * Thu Jul 16 2026 Red Hat PKI Team <rhcs-maint@redhat.com> - 11.9.0-4
 - Update jackson bundled to 2.21.4 
 - Resolves: RHEL-188290
