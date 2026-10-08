@@ -14,7 +14,7 @@ Name:             dogtag-pki
 # Downstream release number:
 # - development/stabilization (unsupported): 0.<n> where n >= 1
 # - GA/update (supported): <n> where n >= 1
-%global           release_number 5
+%global           release_number 6
 
 # Development phase:
 # - development (unsupported): alpha<n> where n >= 1
@@ -44,11 +44,11 @@ Source1: jakarta.activation-api-2.1.2.jar
 Source2: jakarta.annotation-api-1.3.5.jar
 Source3: jakarta.xml.bind-api-2.3.3.jar
 Source4: jackson-annotations-2.21.jar
-Source5: jackson-core-2.21.4.jar
-Source6: jackson-databind-2.21.4.jar
-Source7: jackson-module-jaxb-annotations-2.21.4.jar
-Source8: jackson-jaxrs-base-2.21.4.jar
-Source9: jackson-jaxrs-json-provider-2.21.4.jar
+Source5: jackson-core-2.21.6.jar
+Source6: jackson-databind-2.21.6.jar
+Source7: jackson-module-jaxb-annotations-2.21.6.jar
+Source8: jackson-jaxrs-base-2.21.6.jar
+Source9: jackson-jaxrs-json-provider-2.21.6.jar
 Source10: jboss-jaxrs-2.0-api-1.0.0.Final.jar
 Source11: jboss-logging-3.5.3.Final.jar
 Source12: resteasy-jaxrs-3.0.26.Final.jar
@@ -608,10 +608,10 @@ Provides:         bundled(jakarta-annotations) = 1.3.5
 Provides:         bundled(jaxb-api) = 2.3.3
 
 Provides:         bundled(jackson-annotations) = 2.21
-Provides:         bundled(jackson-core) = 2.21.4
-Provides:         bundled(jackson-databind) = 2.21.4
-Provides:         bundled(jackson-modules-base) = 2.21.4
-Provides:         bundled(jackson-jaxrs-providers) = 2.21.4
+Provides:         bundled(jackson-core) = 2.21.6
+Provides:         bundled(jackson-databind) = 2.21.6
+Provides:         bundled(jackson-modules-base) = 2.21.6
+Provides:         bundled(jackson-jaxrs-providers) = 2.21.6
 
 Provides:         bundled(jboss-jaxrs-2.0-api) = 1.0.0
 Provides:         bundled(jboss-logging) = 3.5.3
@@ -2178,6 +2178,10 @@ fi
 
 ################################################################################
 %changelog
+* Wed Sep 30 2026 IDM PKI Team <ipa-pki-team@redhat.com> - 11.9.0-8
+- Update jackson bundled to 2.21.6
+- Resolves: RHEL-259220
+
 * Sat Sep 19 2026 Fraser Tweedale <ftweedal@redhat.com> - 11.9.0-5
 - RHEL-245469 CVE-2026-76561 dogtag-pki: ExternalProcessConstraint executable allow-list
 - RHEL-248585 CVE-2026-80110 dogtag-pki: ACLFilter sort order fix
