@@ -30,7 +30,7 @@ URL:              https://www.dogtagpki.org
 # The entire source code is GPLv2 except for 'pki-tps' which is LGPLv2
 License:          GPL-2.0-only AND LGPL-2.0-only
 Version:          %{major_version}.%{minor_version}.%{update_version}
-Release:          %{release_number}%{?phase:.}%{?phase}%{?timestamp:.}%{?timestamp}%{?commit_id:.}%{?commit_id}%{?dist}
+Release:          %{release_number}%{?phase:.}%{?phase}%{?timestamp:.}%{?timestamp}%{?commit_id:.}%{?commit_id}%{?dist}.1
 
 # To create a tarball from a version tag:
 # $ git archive \
@@ -2178,7 +2178,16 @@ fi
 
 ################################################################################
 %changelog
-* Wed Sep 30 2026 IDM PKI Team <ipa-pki-team@redhat.com> - 11.9.0-8
+* Fri Oct 23 2026 IDM PKI Team <ipa-pki-team@redhat.com> - 11.9.0-6.1
+- Update jackson-core, jackson-databind and resteasy
+- Fix CVE-2026-89059: RESTEasy IIOImageProvider Unbounded Image Decode
+- Fix CVE-2026-89058: RESTEasy CorsFilter Reflects Arbitrary Origin with Credentials under Wildcard Config
+- Fix CVE-2026-89407: Jackson-core: Denial of Service via regular expression backtracking
+- Resolves: RHEL-263173
+- Resolves: RHEL-263615
+- Resolves: RHEL-272193
+
+* Wed Sep 30 2026 IDM PKI Team <ipa-pki-team@redhat.com> - 11.9.0-6
 - Update jackson bundled to 2.21.6
 - Resolves: RHEL-259220
 
