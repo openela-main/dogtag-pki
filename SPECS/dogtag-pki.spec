@@ -14,7 +14,7 @@ Name:             dogtag-pki
 # Downstream release number:
 # - development/stabilization (unsupported): 0.<n> where n >= 1
 # - GA/update (supported): <n> where n >= 1
-%global           release_number 6
+%global           release_number 9
 
 # Development phase:
 # - development (unsupported): alpha<n> where n >= 1
@@ -30,7 +30,7 @@ URL:              https://www.dogtagpki.org
 # The entire source code is GPLv2 except for 'pki-tps' which is LGPLv2
 License:          GPL-2.0-only AND LGPL-2.0-only
 Version:          %{major_version}.%{minor_version}.%{update_version}
-Release:          %{release_number}%{?phase:.}%{?phase}%{?timestamp:.}%{?timestamp}%{?commit_id:.}%{?commit_id}%{?dist}.1
+Release:          %{release_number}%{?phase:.}%{?phase}%{?timestamp:.}%{?timestamp}%{?commit_id:.}%{?commit_id}%{?dist}
 
 # To create a tarball from a version tag:
 # $ git archive \
@@ -219,7 +219,7 @@ BuildRequires:    javapackages-tools
 %if %{without runtime_deps}
 BuildRequires:    xmlstarlet
 %endif
-%if 0%{?fedora} >= 44 || 0%{?rhel} >= 11
+%if 0%{?fedora} >= 44 || 0%{?rhel} >= 10
 BuildRequires:     tomcat-lib >= 1:10.1.36
 BuildRequires:     tomcat-jakartaee-migration
 %else
@@ -260,8 +260,7 @@ BuildRequires:    mvn(org.jboss.resteasy:resteasy-jackson2-provider)
 BuildRequires:    mvn(org.jboss.resteasy:resteasy-servlet-initializer)
 %endif
 
-%if 0%{?fedora} && 0%{?fedora} >= 44 || 0%{?rhel} && 0%{?rhel} >= 11
-
+%if 0%{?fedora} && 0%{?fedora} >= 44 || 0%{?rhel} && 0%{?rhel} >= 10
 BuildRequires:    mvn(org.apache.tomcat:tomcat-catalina) >= 10.1.36
 BuildRequires:    mvn(org.apache.tomcat:tomcat-servlet-api) >= 10.1.36
 BuildRequires:    mvn(org.apache.tomcat:tomcat-jaspic-api) >= 10.1.36
@@ -696,7 +695,7 @@ Requires:         mvn(org.jboss.resteasy:resteasy-servlet-initializer)
 Provides:         bundled(resteasy-servlet-initializer) = 3.0.26
 %endif
 
-%if 0%{?rhel} && 0%{?rhel} >= 11
+%if 0%{?rhel} && 0%{?rhel} >= 10
 Requires:         tomcat >= 1:10.1.36
 %else
 Requires:         tomcat9 >= 1:9.0.62
@@ -1113,7 +1112,7 @@ popd
 
 %endif
 
-%if 0%{?fedora} && 0%{?fedora} >= 44 || 0%{?rhel} && 0%{?rhel} >= 11
+%if 0%{?fedora} && 0%{?fedora} >= 44 || 0%{?rhel} && 0%{?rhel} >= 10
 #migrate the source first because we are starting with tomcat 9 code, so we can build against either tomcat 9 or 10.1, based on the build platform
 /usr/bin/javax2jakarta -profile=EE -exclude=./base/tomcat-9.0 ./base ./base 
 %endif
@@ -1196,7 +1195,7 @@ then
     
     #migrate necessary files being copied around to jakarta 9.0 ee, for >= f43 and rhel10
 
-    %if 0%{?fedora} && 0%{?fedora} >= 44 || 0%{?rhel} && 0%{?rhel} >= 11
+    %if 0%{?fedora} && 0%{?fedora} >= 44 || 0%{?rhel} && 0%{?rhel} >= 10
     echo "Doing the tomcat 10 version..."
 
     /usr/bin/javax2jakarta  -profile=EE  jboss-jaxrs-api_2.0_spec-$JAXRS_VERSION.jar  jboss-jaxrs-api_2.0_spec-$JAXRS_VERSION.jar 
@@ -1245,7 +1244,7 @@ then
     cp /usr/share/java/resteasy/resteasy-servlet-initializer.jar \
         resteasy-servlet-initializer-$RESTEASY_VERSION.jar
 
-    %if 0%{?fedora} && 0%{?fedora} >= 44 || 0%{?rhel} && 0%{?rhel} >= 11
+    %if 0%{?fedora} && 0%{?fedora} >= 44 || 0%{?rhel} && 0%{?rhel} >= 10
     /usr/bin/javax2jakarta  -profile=EE resteasy-servlet-initializer-$RESTEASY_VERSION.jar resteasy-servlet-initializer-$RESTEASY_VERSION.jar
     %endif
 
@@ -1262,7 +1261,7 @@ fi
 
 %if ! %{with server}
 %pom_disable_module tomcat base
-%if 0%{?fedora} >= 44 || 0%{?rhel} >= 11
+%if 0%{?fedora} >= 44 || 0%{?rhel} >= 10
 %pom_disable_module tomcat-10.1 base
 %else
 %pom_disable_module tomcat-9.0 base
@@ -1315,7 +1314,7 @@ fi
 %mvn_file org.dogtagpki.pki:pki-server            pki/pki-server
 %mvn_file org.dogtagpki.pki:pki-server-webapp     pki/pki-server-webapp
 %mvn_file org.dogtagpki.pki:pki-tomcat            pki/pki-tomcat
-%if 0%{?fedora} >= 44 || 0%{?rhel} >= 11
+%if 0%{?fedora} >= 44 || 0%{?rhel} >= 10
 %mvn_file org.dogtagpki.pki:pki-tomcat-10.1       pki/pki-tomcat-10.1
 %else
 %mvn_file org.dogtagpki.pki:pki-tomcat-9.0        pki/pki-tomcat-9.0
@@ -1340,7 +1339,7 @@ fi
 %mvn_package org.dogtagpki.pki:pki-server-webapp  pki-server
 %mvn_package org.dogtagpki.pki:pki-tomcat         pki-server
 
-%if 0%{?fedora} >= 44 || 0%{?rhel} >= 11
+%if 0%{?fedora} >= 44 || 0%{?rhel} >= 10
 %mvn_package org.dogtagpki.pki:pki-tomcat-10.1    pki-server
 %else
 %mvn_package org.dogtagpki.pki:pki-tomcat-9.0     pki-server
@@ -1371,7 +1370,7 @@ export JAVA_HOME=%{java_home}
 %if %{with maven}
 # build Java binaries and run unit tests with Maven
 
-%if 0%{?fedora} >= 44 || 0%{?rhel} >= 11
+%if 0%{?fedora} >= 44 || 0%{?rhel} >= 10
 %pom_disable_module tomcat-9.0 base
 %pom_remove_dep :pki-tomcat-9.0 base/server
 %else
@@ -1393,7 +1392,7 @@ ln -sf ../../base/tools/target/pki-tools.jar
 %if %{with server}
 ln -sf ../../base/tomcat/target/pki-tomcat.jar
 
-%if 0%{?fedora} >= 44 || 0%{?rhel} >= 11
+%if 0%{?fedora} >= 44 || 0%{?rhel} >= 10
 ln -sf ../../base/tomcat-10.1/target/pki-tomcat-10.1.jar
 %else
 ln -sf ../../base/tomcat-9.0/target/pki-tomcat-9.0.jar
@@ -1458,13 +1457,6 @@ pkgs=base\
 %{?with_meta:,meta}\
 %{?with_tests:,tests}\
 %{?with_debug:,debug}
-
-
-## Force use of tomcat 9.
-
-sed -i 's/^APP_SERVER=.*/APP_SERVER=tomcat-9.0/g' build.sh
-
-
 
 # build PKI console, Javadoc, and native binaries with CMake
 ./build.sh \
@@ -1986,7 +1978,7 @@ fi
 %{_datadir}/java/pki/pki-server.jar
 %{_datadir}/java/pki/pki-server-webapp.jar
 %{_datadir}/java/pki/pki-tomcat.jar
-%if 0%{?fedora} >= 44 || 0%{?rhel} >= 11
+%if 0%{?fedora} >= 44 || 0%{?rhel} >= 10
 %{_datadir}/java/pki/pki-tomcat-10.1.jar
 %else
 %{_datadir}/java/pki/pki-tomcat-9.0.jar
@@ -2178,22 +2170,28 @@ fi
 
 ################################################################################
 %changelog
-* Fri Oct 23 2026 IDM PKI Team <ipa-pki-team@redhat.com> - 11.9.0-6.1
-- Update jackson-core, jackson-databind and resteasy
-- Fix CVE-2026-89059: RESTEasy IIOImageProvider Unbounded Image Decode
-- Fix CVE-2026-89058: RESTEasy CorsFilter Reflects Arbitrary Origin with Credentials under Wildcard Config
-- Fix CVE-2026-89407: Jackson-core: Denial of Service via regular expression backtracking
-- Resolves: RHEL-263173
-- Resolves: RHEL-263615
-- Resolves: RHEL-272193
+* Wed Sep 30 2026 IDM PKI Team <ipa-pki-team@redhat.com> - 11.9.0-9
+- Rebuild against rhel-10.3 target (previous 11.9.0-8 build was
+  mistakenly tagged into rhel-10.3-z-candidate)
+- Resolves: RHEL-259219
 
-* Wed Sep 30 2026 IDM PKI Team <ipa-pki-team@redhat.com> - 11.9.0-6
+* Wed Sep 30 2026 IDM PKI Team <ipa-pki-team@redhat.com> - 11.9.0-8
 - Update jackson bundled to 2.21.6
-- Resolves: RHEL-259220
+- Resolves: RHEL-259219
 
-* Sat Sep 19 2026 Fraser Tweedale <ftweedal@redhat.com> - 11.9.0-5
-- RHEL-245469 CVE-2026-76561 dogtag-pki: ExternalProcessConstraint executable allow-list
-- RHEL-248585 CVE-2026-80110 dogtag-pki: ACLFilter sort order fix
+* Mon Sep 21 2026 Marco Fargetta <mfargett@redhat.com> - 11.9.0-7
+- Rebuild against rhel-10.3 target (previous 11.9.0-6 build was
+  mistakenly tagged into rhel-10.3-z-candidate)
+- RHEL-245468 CVE-2026-76561 dogtag-pki: ExternalProcessConstraint executable allow-list
+- RHEL-248584 CVE-2026-80110 dogtag-pki: ACLFilter sort order fix
+
+* Sat Sep 19 2026 Fraser Tweedale <ftweedal@redhat.com> - 11.9.0-6
+- RHEL-245468 CVE-2026-76561 dogtag-pki: ExternalProcessConstraint executable allow-list
+- RHEL-248584 CVE-2026-80110 dogtag-pki: ACLFilter sort order fix
+
+* Wed Jul 29 2026 Red Hat PKI Team <rhcs-maint@redhat.com> - 11.9.0-5
+- Upgrade to tomcat 10
+- Resolves: RHEL-210971
 
 * Thu Jul 16 2026 Red Hat PKI Team <rhcs-maint@redhat.com> - 11.9.0-4
 - Update jackson bundled to 2.21.4 
